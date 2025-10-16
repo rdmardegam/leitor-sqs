@@ -2,6 +2,7 @@ package com.rdmardegam.leitor_sqs.consumer;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rdmardegam.leitor_sqs.MessageProcessorService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 
 import io.awspring.cloud.sqs.listener.acknowledgement.Acknowledgement;
@@ -21,9 +22,12 @@ public class SqsMessageConsumer {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final Executor taskExecutor;
+    private final MessageProcessorService messageProcessorService;
 
-    public SqsMessageConsumer(Executor taskExecutor) {
+
+    public SqsMessageConsumer(Executor taskExecutor, MessageProcessorService messageProcessorService) {
         this.taskExecutor = taskExecutor;
+        this.messageProcessorService = messageProcessorService;
     }
 
 
@@ -37,21 +41,27 @@ public class SqsMessageConsumer {
 
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 2))
     public void processMessage(org.springframework.messaging.Message message) {
-        try {
-            var json = mapper.readTree(message.getPayload().toString());
-            var payload = json.get("payload");
-            String cardId = payload.get("cardId").asText();
-            String pan = payload.get("pan").asText();
-            log.info("Processando cardId={} pan={} thread={}", cardId, pan, Thread.currentThread().getName());
 
-            Thread.sleep(5000);
+        messageProcessorService.processMessage(message);
 
-            log.info("Mensagem processada com sucesso - cardId={}", cardId);
 
-            Acknowledgement.acknowledge(message);
-        } catch (Exception e) {
-            log.error("Erro ao processar mensagem: {}", e.getMessage(), e);
-            throw new RuntimeException("Erro ao processar mensagem", e);
-        }
+        //        try {
+//            var json = mapper.readTree(message.getPayload().toString());
+//            var payload = json.get("payload");
+//            String cardId = payload.get("cardId").asText();
+//            String pan = payload.get("pan").asText();
+//            log.info("Processando cardId={} pan={} thread={}", cardId, pan, Thread.currentThread().getName());
+//
+//            Thread.sleep(1000);
+//
+//            int x = Integer.parseInt("S");
+//
+//            log.info("Mensagem processada com sucesso - cardId={}", cardId);
+//
+//            Acknowledgement.acknowledge(message);
+//        } catch (Exception e) {
+//            log.error("Erro ao processar mensagem: {}", e.getMessage(), e);
+//            throw new RuntimeException("Erro ao processar mensagem", e);
+//        }
     }
 }

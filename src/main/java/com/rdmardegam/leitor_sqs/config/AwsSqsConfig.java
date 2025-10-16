@@ -26,8 +26,8 @@ public class AwsSqsConfig {
 
         return SqsMessageListenerContainerFactory.builder()
                 .configure(options -> options.acknowledgementMode(AcknowledgementMode.MANUAL)
-                        .maxConcurrentMessages(100) // quantidade de threads
-                        .maxMessagesPerPoll(20)  // quantidade de msg recuperada por poll
+                        .maxConcurrentMessages(1) // quantidade de threads
+                        .maxMessagesPerPoll(1)  // quantidade de msg recuperada por poll
                 )
                 //.acknowledgementResultCallback(new AckResultCallback())
                 .sqsAsyncClient(sqsAsyncClient)
